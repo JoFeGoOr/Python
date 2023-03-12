@@ -1,2 +1,1 @@
 # Python
-print('hola mundo')
