@@ -1,9 +1,15 @@
-from uldaq import (get_daq_device_inventory,DaqDevice,InterfaceType,AiInputMode)
+from uldaq import (get_daq_device_inventory,DaqDevice,InterfaceType,AiInputMode,AInFlag)
+from os import system
+from sys import stdout
+from time import sleep
 
 def main():
 
+    range_index = 0    #controla que rango de voltajes se usara
     high_channel = 3
-    range_index = 1
+    low_channel = 0
+    canal = 0
+
 
 
     try:
@@ -23,9 +29,7 @@ def main():
         
         # Si existe solo 1, su indice es automaticamente 0, si existe mas de 1, se debe verificar con que dispositivo queremos interactuar
         if number_of_devices != 1:
-            descriptor_index = input('\nSeleccione un dispositivo DAQ, ingrese un numero'
-                                 + ' entre 0 y '
-                                 + str(number_of_devices - 1) + ': ')
+            descriptor_index = input('\nSeleccione un dispositivo DAQ, ingrese un numero entre 0 y ' + str(number_of_devices - 1) + ': ')
             descriptor_index = int(descriptor_index)
             if descriptor_index not in range(number_of_devices):
                 raise RuntimeError('Error: Indice descriptor invalido')
@@ -55,14 +59,47 @@ def main():
         # La entrada por defecto es SINGLE_ENDED.
         input_mode = AiInputMode.SINGLE_ENDED
 
+        # Obtenemos un lista de rango de voltajes validos
         ranges = ai_info.get_ranges(input_mode)
         #for i in range(len(ranges)):
         #    print(ranges[i])
+        #print(ranges[range_index])
+
+        print('\n', descriptor.dev_string, ' listo', sep='')
+        print('    Canal: ', canal)
+        print('    Modo Input: ', input_mode.name)
+        print('    Rango: ', ranges[range_index].name)
+
+        try:
+            input('\nPresionar ENTER para continuar\n')
+        except (NameError, SyntaxError):
+            pass
+
+        system('clear')
+
+        try:
+            # bucle para la toma de datos
+            while True:
+                try:
+                    reset_cursor()
+                    # Mensaje de inicializacion
+                    print('Porfavor Presione CTRL + C para terminar con el proceso\n')
+                    print('Dispositivo DAQ activo: ', descriptor.dev_string, ' (',descriptor.unique_id, ')\n', sep='')
+                    data = ai_device.a_in(canal,input_mode,ranges[range_index],AInFlag.DEFAULT)
+                    print('canal ',canal,' data: ','{:.6f}'.format(data), sep='')
+                    sleep(0.1)
+                except (ValueError, NameError, SyntaxError):
+                    break
+        except KeyboardInterrupt:
+            #system('clear')
+            pass
 
 
     except RuntimeError as error:
         print('\n', error)
 
-
+def reset_cursor():
+    """Reset the cursor in the terminal window."""
+    stdout.write('\033[1;1H')
 
 main()
