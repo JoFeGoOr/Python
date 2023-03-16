@@ -87,7 +87,7 @@ def main():
                     print('Dispositivo DAQ activo: ', descriptor.dev_string, ' (',descriptor.unique_id, ')\n', sep='')
                     data = ai_device.a_in(canal,input_mode,ranges[range_index],AInFlag.DEFAULT)
                     print('canal ',canal,' data: ','{:.6f}'.format(data), sep='')
-                    sleep(0.1)
+                    #sleep(0.1)
                 except (ValueError, NameError, SyntaxError):
                     break
         except KeyboardInterrupt:
