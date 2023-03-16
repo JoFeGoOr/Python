@@ -102,4 +102,5 @@ def reset_cursor():
     """Reset the cursor in the terminal window."""
     stdout.write('\033[1;1H')
 
-main()
+if __name__ == '__main__':
+    main()
