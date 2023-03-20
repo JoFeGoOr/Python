@@ -1,16 +1,26 @@
 #En este codigo se leera 1 o varios canales a una frecuencia (muestras por segundo) dada por el usuario.
 
-from uldaq import (get_daq_device_inventory,DaqDevice,InterfaceType,AiInputMode,AInFlag)
+from __future__ import print_function
+from uldaq import (get_daq_device_inventory, DaqDevice, AInScanFlag, ScanStatus,ScanOption, create_float_buffer, InterfaceType, AiInputMode)
+from time import sleep
 from os import system
 from sys import stdout
-from time import sleep
 
 def main():
 
-    rango_volt = 0
-    canal_inicio = 0
-    canal_fin = 0
-    frecuencia = 0
+    """Analog input scan example."""
+    daq_device = None
+    ai_device = None
+    status = ScanStatus.IDLE
+
+    range_index = 2
+    interface_type = InterfaceType.ANY
+    low_channel = 0
+    high_channel = 0
+    samples_per_channel = 10000
+    rate = 2
+    scan_options = ScanOption.CONTINUOUS
+    flags = AInScanFlag.DEFAULT
 
     try:
 
@@ -45,6 +55,11 @@ def main():
         if ai_device is None:
             raise RuntimeError('Error: El dispositivo DAQ no soporta entradas analogicas')
         
+        # Verificamos si dispositivo DAQ especificado es compatible con una entrada analógica controlada por hardware
+        ai_info = ai_device.get_info()
+        if not ai_info.has_pacer():
+            raise RuntimeError('\nError: El dispositivo DAQ especificado no es compatible con la entrada analógica controlada por hardware')
+
         # Establecemos la conexion con el dispositivo DAQ, 3 flash de led indica que la conexion fue exitosa
         descriptor = daq_device.get_descriptor()
         print('\nConectando con', descriptor.dev_string, '- por favor espere')
@@ -54,28 +69,67 @@ def main():
         else:
             raise RuntimeError('Error: No se pudo hacer conexion con el dispositivo')
 
-        ai_info = ai_device.get_info()
-
         # La entrada por defecto es SINGLE_ENDED.
         input_mode = AiInputMode.SINGLE_ENDED
+
+        # conseguimos el numero de canales y validamos el numero del canal superior.
+        number_of_channels = ai_info.get_num_chans_by_mode(input_mode)
+        if high_channel >= number_of_channels:
+            high_channel = number_of_channels - 1
+        channel_count = high_channel - low_channel + 1
 
         # Obtenemos un lista de rango de voltajes validos
         ranges = ai_info.get_ranges(input_mode)
 
-        # Pedimos al usuario los valores de trabajo
-        canal_inicio = input('Ingrese el primer canal en el que se hara una lectura: ')
-        canal_inicio = int(canal_inicio)
-        canal_fin = input('Ingrese el ultimo canal en el que se hara una lectura: ')
-        canal_fin = int(canal_fin)
-        rango_volt = input('Ingrese el rango de voltajes (0=+-10v;1=+-5v;2=+-2v;3=+-1v): ')
-        rango_volt = int(rango_volt)
-        frecuencia = input('Indique la frecuencia de muestreo con la que se desa trabajar en hertz: ')
-        frecuencia = int(frecuencia)
+        # separamos un espacion de memoria para la informacion a recibir.
+        data = create_float_buffer(channel_count, samples_per_channel)
 
-        print('\n', descriptor.dev_string, ' listo', sep='')
-        print('    Canal: ', canal_inicio, ' a ', canal_fin)
-        print('    Modo Input: ', input_mode.name)
-        print('    Rango: ', ranges[rango_volt].name)
+        print('\n', descriptor.dev_string, ' ready', sep='')
+        print('    Canales: ', low_channel, '-', high_channel)
+        print('    Input mode: ', input_mode.name)
+        print('    Rango: ', ranges[range_index].name)
+        print('    Muestras por canal: ', samples_per_channel)
+        print('    Frecuencia: ', rate, 'Hz')
+        #print('    Scan options:', display_scan_options(scan_options))
+
+        try:
+            input('\nPresionar ENTER para continuar\n')
+        except (NameError, SyntaxError):
+            pass
+
+        system('clear')
+
+        # Empezamos la adquisicion.
+        rate = ai_device.a_in_scan(low_channel, high_channel, input_mode,ranges[range_index], samples_per_channel,rate, scan_options, flags, data)
+
+        try:
+            # bucle para la toma de datos
+            while True:
+                try:
+                    # Obtenemos el estado de la operacion en segundo plano
+                    status, transfer_status = ai_device.get_scan_status()
+
+                    reset_cursor()
+                    # Mensaje de inicializacion
+                    print('Porfavor Presione CTRL + C para terminar con el proceso\n')
+                    print('Dispositivo DAQ activo: ', descriptor.dev_string, ' (',descriptor.unique_id, ')\n', sep='')
+                    print('Frecuencia de escaneo actual = ', '{:.6f}'.format(rate), 'Hz\n')
+
+                    index = transfer_status.current_index
+                    print('currentTotalCount = ',transfer_status.current_total_count)
+                    print('currentScanCount = ',transfer_status.current_scan_count)
+                    print('currentIndex = ', index, '\n')
+
+                    for i in range(channel_count):
+                        #clear_eol()
+                        print('chan =',i + low_channel, ': ','{:.6f}'.format(data[index + i]))
+
+                    #sleep(0.1)
+                except (ValueError, NameError, SyntaxError):
+                    break
+        except KeyboardInterrupt:
+            system('clear')
+            pass
 
     except RuntimeError as error:
         print('\n', error)
