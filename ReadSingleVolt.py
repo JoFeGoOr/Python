@@ -1,8 +1,6 @@
 #En este codigo se hace la lectura más basica de un canal analogico, sirve para familiarizarse con la conexion al dispositivo y posibles manejos para
 #varios dispositivos conectados al mismo tiempo
 
-
-
 from uldaq import (get_daq_device_inventory,DaqDevice,InterfaceType,AiInputMode,AInFlag)
 from os import system
 from sys import stdout
@@ -12,7 +10,6 @@ def main():
 
     range_index = 0     #controla que rango de voltajes se usara
     canal = 0           #indica el canal que se ocupara para realizar la lectura.
-    status=''
 
     try:
         # Obtenemos una lista de objetos(dispositivos) que pueden ser usados como DaqDevice
@@ -30,7 +27,7 @@ def main():
                   devices[i].unique_id, ')', sep='')
         
         # Si existe solo 1, su indice es automaticamente 0, si existe mas de 1, se debe verificar con que dispositivo queremos interactuar
-        if number_of_devices != 1:
+        if number_of_devices > 1:
             descriptor_index = input('\nSeleccione un dispositivo DAQ, ingrese un numero entre 0 y ' + str(number_of_devices - 1) + ': ')
             descriptor_index = int(descriptor_index)
             if descriptor_index not in range(number_of_devices):
