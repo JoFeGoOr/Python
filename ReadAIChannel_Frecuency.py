@@ -128,6 +128,7 @@ def main():
                 except (ValueError, NameError, SyntaxError):
                     break
         except KeyboardInterrupt:
+            daq_device.disconnect()
             system('clear')
             pass
 
