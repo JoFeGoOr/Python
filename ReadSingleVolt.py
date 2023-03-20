@@ -5,12 +5,8 @@ from time import sleep
 
 def main():
 
-    range_index = 0    #controla que rango de voltajes se usara
-    high_channel = 3
-    low_channel = 0
-    canal = 0
-
-
+    range_index = 0     #controla que rango de voltajes se usara
+    canal = 0           #indica el canal que se ocupara para realizar la lectura.
 
     try:
         # Obtenemos una lista de objetos(dispositivos) que pueden ser usados como DaqDevice
@@ -42,10 +38,9 @@ def main():
         # Obtiene el objeto AIDevice(Subsistema de entradas analogicas) y verifica si es valido.
         ai_device = daq_device.get_ai_device()
         if ai_device is None:
-            raise RuntimeError('Error: El dispositivo DAQ no soporta '
-                               'entradas analogicas')
+            raise RuntimeError('Error: El dispositivo DAQ no soporta entradas analogicas')
         
-        # Establecemos la conexion con el dispositivo DAQ, 2 flash de led indica que
+        # Establecemos la conexion con el dispositivo DAQ, 3 flash de led indica que la conexion fue exitosa
         descriptor = daq_device.get_descriptor()
         print('\nConectando con', descriptor.dev_string, '- por favor espere')
         daq_device.connect(connection_code=0)
