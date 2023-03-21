@@ -17,8 +17,8 @@ def main():
     interface_type = InterfaceType.ANY
     low_channel = 0
     high_channel = 0
-    samples_per_channel = 10000
-    rate = 2
+    samples_per_channel = 10000000
+    rate = 1000
     scan_options = ScanOption.CONTINUOUS
     flags = AInScanFlag.DEFAULT
 
@@ -90,7 +90,7 @@ def main():
         print('    Rango: ', ranges[range_index].name)
         print('    Muestras por canal: ', samples_per_channel)
         print('    Frecuencia: ', rate, 'Hz')
-        #print('    Scan options:', display_scan_options(scan_options))
+        print('    Scan options:', display_scan_options(scan_options))
 
         try:
             input('\nPresionar ENTER para continuar\n')
@@ -138,6 +138,16 @@ def main():
 def reset_cursor():
     """Reset the cursor in the terminal window."""
     stdout.write('\033[1;1H')
+
+def display_scan_options(bit_mask):
+    """Create a displays string for all scan options."""
+    options = []
+    if bit_mask == ScanOption.DEFAULTIO:
+        options.append(ScanOption.DEFAULTIO.name)
+    for option in ScanOption:
+        if option & bit_mask:
+            options.append(option.name)
+    return ', '.join(options)
 
 if __name__ == '__main__':
     main()
