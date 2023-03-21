@@ -17,10 +17,11 @@ def main():
     interface_type = InterfaceType.ANY
     low_channel = 0
     high_channel = 0
-    samples_per_channel = 10000000
-    rate = 1000
+    samples_per_channel = 3
+    rate = 1
     scan_options = ScanOption.CONTINUOUS
     flags = AInScanFlag.DEFAULT
+    n = 1
 
     try:
 
@@ -94,6 +95,7 @@ def main():
 
         try:
             input('\nPresionar ENTER para continuar\n')
+            txt = open('datosDAQ.txt','w')
         except (NameError, SyntaxError):
             pass
 
@@ -122,18 +124,29 @@ def main():
 
                     for i in range(channel_count):
                         #clear_eol()
-                        print('chan =',i + low_channel, ': ','{:.6f}'.format(data[index + i]))
+                        print('chan =',i + low_channel, ': ','{:.8f}'.format(data[index + i]))
+                        print(data[index + i], 'info para guardar')
+
+                    if n == transfer_status.current_total_count:
+                        txt.write(str(transfer_status.current_total_count) + ' : ' + str(data[index + i]) + ' \n ' )
+                        n = n + 1
 
                     #sleep(0.1)
                 except (ValueError, NameError, SyntaxError):
                     break
         except KeyboardInterrupt:
-            daq_device.disconnect()
             system('clear')
             pass
-
     except RuntimeError as error:
         print('\n', error)
+    finally:
+        if daq_device:
+            # Stop the acquisition if it is still running.
+            if status == ScanStatus.RUNNING:
+                ai_device.scan_stop()
+            if daq_device.is_connected():
+                daq_device.disconnect()
+            daq_device.release()
 
 def reset_cursor():
     """Reset the cursor in the terminal window."""
