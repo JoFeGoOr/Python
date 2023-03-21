@@ -1,0 +1,1 @@
+Frecuencia de muestreo en muestras por segundo:100

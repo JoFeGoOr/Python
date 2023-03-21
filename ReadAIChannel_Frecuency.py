@@ -17,8 +17,9 @@ def main():
     interface_type = InterfaceType.ANY
     low_channel = 0
     high_channel = 0
-    samples_per_channel = 3
-    rate = 1
+    samples_per_channel = 1
+    frec = 10
+    frec2 = 100
     scan_options = ScanOption.CONTINUOUS
     flags = AInScanFlag.DEFAULT
     n = 1
@@ -83,27 +84,37 @@ def main():
         ranges = ai_info.get_ranges(input_mode)
 
         # separamos un espacion de memoria para la informacion a recibir.
-        data = create_float_buffer(channel_count, samples_per_channel)
+        data1 = create_float_buffer(channel_count, samples_per_channel)
+        data2 = create_float_buffer(channel_count, samples_per_channel)
 
         print('\n', descriptor.dev_string, ' ready', sep='')
         print('    Canales: ', low_channel, '-', high_channel)
         print('    Input mode: ', input_mode.name)
         print('    Rango: ', ranges[range_index].name)
         print('    Muestras por canal: ', samples_per_channel)
-        print('    Frecuencia: ', rate, 'Hz')
+        print('    Frecuencia: ', frec, 'Hz')
         print('    Scan options:', display_scan_options(scan_options))
 
         try:
             input('\nPresionar ENTER para continuar\n')
             txt = open('datosDAQ.txt','w')
+            txt2 = open('datos2DAQ.txt','w')
+            txt.write('Frecuencia de muestreo en muestras por segundo:' + str(frec) + '\n')
+            txt2.write('Frecuencia de muestreo en muestras por segundo:' + str(frec2) + '\n')
+
         except (NameError, SyntaxError):
             pass
 
         system('clear')
 
         # Empezamos la adquisicion.
-        rate = ai_device.a_in_scan(low_channel, high_channel, input_mode,ranges[range_index], samples_per_channel,rate, scan_options, flags, data)
+        rate = ai_device.a_in_scan(low_channel, high_channel, input_mode,ranges[range_index], samples_per_channel,frec, scan_options, flags, data1)
+        #rate2 = ai_device.a_in_scan(low_channel, high_channel, input_mode,ranges[range_index], samples_per_channel,frec2, scan_options, flags, data1)
 
+        aux = data1[0]
+        ver = True
+        #print(aux)
+        #sleep(5)
         try:
             # bucle para la toma de datos
             while True:
@@ -115,27 +126,38 @@ def main():
                     # Mensaje de inicializacion
                     print('Porfavor Presione CTRL + C para terminar con el proceso\n')
                     print('Dispositivo DAQ activo: ', descriptor.dev_string, ' (',descriptor.unique_id, ')\n', sep='')
-                    print('Frecuencia de escaneo actual = ', '{:.6f}'.format(rate), 'Hz\n')
+                    print('Frecuencia de escaneo actual = ', '{:.6f}'.format(frec), 'Hz\n')
 
                     index = transfer_status.current_index
                     print('currentTotalCount = ',transfer_status.current_total_count)
                     print('currentScanCount = ',transfer_status.current_scan_count)
                     print('currentIndex = ', index, '\n')
 
-                    for i in range(channel_count):
+                    #print(aux)
+                    #print(index + i)
+                    if data1[index + i] == aux and ver == True:
+                        txt.write(str(data1[index + i])+'\n')
+                        ver = False
+                    elif data1[index + i] != aux:
+                        aux = data1[index + i]
+                        ver = True
+
+                    print('chan =',i + low_channel, ': ','{:.8f}'.format(data1[index + i]))
+
+                    #for i in range(channel_count):
                         #clear_eol()
-                        print('chan =',i + low_channel, ': ','{:.8f}'.format(data[index + i]))
-                        print(data[index + i], 'info para guardar')
+                        #print('chan =',i + low_channel, ': ','{:.8f}'.format(data[index + i]))
+                        #n = data[index + i]
+                        #print(n, 'info')
+                        #print(data[index + i], 'info para guardar')
+                        #txt.write(str(data[index + i]) + '\n' )
 
-                    if n == transfer_status.current_total_count:
-                        txt.write(str(data[index + i]) + ' \n ' )
-                        n = n + 1
-
+                    
                     #sleep(0.1)
                 except (ValueError, NameError, SyntaxError):
                     break
         except KeyboardInterrupt:
-            system('clear')
+            #system('clear')
             pass
     except RuntimeError as error:
         print('\n', error)
