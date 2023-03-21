@@ -128,7 +128,7 @@ def main():
                         print(data[index + i], 'info para guardar')
 
                     if n == transfer_status.current_total_count:
-                        txt.write(str(transfer_status.current_total_count) + ' : ' + str(data[index + i]) + ' \n ' )
+                        txt.write(str(data[index + i]) + ' \n ' )
                         n = n + 1
 
                     #sleep(0.1)
