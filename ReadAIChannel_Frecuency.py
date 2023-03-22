@@ -18,11 +18,9 @@ def main():
     low_channel = 0
     high_channel = 0
     samples_per_channel = 1
-    frec = 10
-    frec2 = 100
+    frec = 40
     scan_options = ScanOption.CONTINUOUS
     flags = AInScanFlag.DEFAULT
-    n = 1
 
     try:
 
@@ -97,9 +95,7 @@ def main():
         try:
             input('\nPresionar ENTER para continuar\n')
             txt = open('datosDAQ.txt','w')
-            txt2 = open('datos2DAQ.txt','w')
-            txt.write('Frecuencia de muestreo en muestras por segundo:' + str(frec) + '\n')
-            txt2.write('Frecuencia de muestreo en muestras por segundo:' + str(frec2) + '\n')
+            #txt.write('Frecuencia de muestreo en muestras por segundo:' + str(frec) + '\n')
 
         except (NameError, SyntaxError):
             pass
