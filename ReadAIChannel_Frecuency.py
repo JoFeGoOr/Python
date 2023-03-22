@@ -85,7 +85,6 @@ def main():
 
         # separamos un espacion de memoria para la informacion a recibir.
         data1 = create_float_buffer(channel_count, samples_per_channel)
-        data2 = create_float_buffer(channel_count, samples_per_channel)
 
         print('\n', descriptor.dev_string, ' ready', sep='')
         print('    Canales: ', low_channel, '-', high_channel)
@@ -109,12 +108,10 @@ def main():
 
         # Empezamos la adquisicion.
         rate = ai_device.a_in_scan(low_channel, high_channel, input_mode,ranges[range_index], samples_per_channel,frec, scan_options, flags, data1)
-        #rate2 = ai_device.a_in_scan(low_channel, high_channel, input_mode,ranges[range_index], samples_per_channel,frec2, scan_options, flags, data1)
 
         aux = data1[0]
         ver = True
-        #print(aux)
-        #sleep(5)
+
         try:
             # bucle para la toma de datos
             while True:
@@ -133,8 +130,6 @@ def main():
                     print('currentScanCount = ',transfer_status.current_scan_count)
                     print('currentIndex = ', index, '\n')
 
-                    #print(aux)
-                    #print(index + i)
                     if data1[index + i] == aux and ver == True:
                         txt.write(str(data1[index + i])+'\n')
                         ver = False
@@ -157,7 +152,6 @@ def main():
                 except (ValueError, NameError, SyntaxError):
                     break
         except KeyboardInterrupt:
-            #system('clear')
             pass
     except RuntimeError as error:
         print('\n', error)
