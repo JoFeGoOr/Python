@@ -18,7 +18,7 @@ def main():
     low_channel = 0
     high_channel = 0
     samples_per_channel = 1
-    frec = 40
+    frec = 3
     scan_options = ScanOption.CONTINUOUS
     flags = AInScanFlag.DEFAULT
 
