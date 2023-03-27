@@ -12,15 +12,16 @@ def main():
     daq_device = None
     ai_device = None
     status = ScanStatus.IDLE
+    scan_options = ScanOption.CONTINUOUS
+    flags = AInScanFlag.DEFAULT
+    interface_type = InterfaceType.ANY
 
     range_index = 2
-    interface_type = InterfaceType.ANY
     low_channel = 0
     high_channel = 0
     samples_per_channel = 1
     frec = 3
-    scan_options = ScanOption.CONTINUOUS
-    flags = AInScanFlag.DEFAULT
+    
 
     try:
 
@@ -119,7 +120,7 @@ def main():
                     # Mensaje de inicializacion
                     print('Porfavor Presione CTRL + C para terminar con el proceso\n')
                     print('Dispositivo DAQ activo: ', descriptor.dev_string, ' (',descriptor.unique_id, ')\n', sep='')
-                    print('Frecuencia de escaneo actual = ', '{:.6f}'.format(frec), 'Hz\n')
+                    print('Frecuencia de escaneo actual = ', '{:.6f}'.format(rate), 'Hz\n')
 
                     index = transfer_status.current_index
                     print('currentTotalCount = ',transfer_status.current_total_count)
