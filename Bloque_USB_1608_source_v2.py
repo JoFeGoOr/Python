@@ -12,7 +12,7 @@ from gnuradio import gr
 class blk(gr.sync_block):  # other base classes are basic_block, decim_block, interp_block
     """Embedded Python Block example - a simple multiply const"""
 
-    def __init__(self, frecuencia=25.0, rango_index=0.0, low_channel=0.0, high_channel=0.0, samples_per_channel=1.0):  # only default arguments here
+    def __init__(self, frecuencia=25, rango_index=0, low_channel=0, high_channel=0, samples_per_channel=1):  # only default arguments here
         """arguments to this function show up as parameters in GRC"""
         gr.sync_block.__init__(
             self,
@@ -35,16 +35,8 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         self.scan_options = ScanOption.CONTINUOUS
         self.flags = AInScanFlag.DEFAULT
         self.interface_type = InterfaceType.ANY
-
-
-
-
-    def work(self, input_items, output_items):
-        """example: multiply with constant"""
-        #output_items[0][:] = self.frecuencia
-        """codigo para tarjeta de adquisicion"""
-        
         try:
+
             # Obtenemos una lista de objetos(dispositivos) que pueden ser usados como DaqDevice
             devices = get_daq_device_inventory(InterfaceType.ANY)
             number_of_devices = len(devices)
@@ -79,14 +71,14 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
             ai_info = self.ai_device.get_info()
             if not ai_info.has_pacer():
                 raise RuntimeError('\nError: El dispositivo DAQ especificado no es compatible con la entrada analógica controlada por hardware')
-
+            
             # Establecemos la conexion con el dispositivo DAQ, 3 flash de led indica que la conexion fue exitosa
             descriptor = self.daq_device.get_descriptor()
             print('\nConectando con', descriptor.dev_string, '- por favor espere')
             self.daq_device.connect(connection_code=0)
             if self.daq_device.is_connected() != True:
                 raise RuntimeError('Error: No se pudo hacer conexion con el dispositivo')
-
+            
             # La entrada por defecto es SINGLE_ENDED.
             input_mode = AiInputMode.SINGLE_ENDED
 
@@ -94,31 +86,35 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
             number_of_channels = ai_info.get_num_chans_by_mode(input_mode)
             if self.high_channel >= number_of_channels:
                 self.high_channel = number_of_channels - 1
-            channel_count = self.high_channel - self.low_channel + 1
+            self.channel_count = self.high_channel - self.low_channel + 1
 
             # Obtenemos un lista de rango de voltajes validos
             ranges = ai_info.get_ranges(input_mode)
 
             # separamos un espacion de memoria para la informacion a recibir.
-            data = create_float_buffer(channel_count, self.samples_per_channel)
+            self.data = create_float_buffer(self.channel_count, self.samples_per_channel)
 
-            print('\n', descriptor.dev_string, ' ready', sep='')
-            print('    Canales: ', self.low_channel, '-', self.high_channel)
-            print('    Input mode: ', input_mode.name)
-            print('    Rango: ', ranges[self.rango_index].name)
-            print('    Muestras por canal: ', self.samples_per_channel)
-            print('    Frecuencia: ', self.frecuencia, 'Hz')
+            #print('\n', descriptor.dev_string, ' ready', sep='')
+            #print('    Canales: ', self.low_channel, '-', self.high_channel)
+            #print('    Input mode: ', input_mode.name)
+            #print('    Rango: ', ranges[self.rango_index].name)
+            #print('    Muestras por canal: ', self.samples_per_channel)
+            #print('    Frecuencia: ', self.frecuencia, 'Hz')
+
+            # Empezamos la adquisicion.
+            rate = self.ai_device.a_in_scan(low_channel, high_channel, input_mode,ranges[self.rango_index], samples_per_channel,frecuencia, self.scan_options, self.flags, self.data)
 
         except RuntimeError as error:
             print('\n', error)
 
-        finally:
-            if self.daq_device:
-                # Stop the acquisition if it is still running.
-                if self.status == ScanStatus.RUNNING:
-                    self.ai_device.scan_stop()
-                if self.daq_device.is_connected():
-                    self.daq_device.disconnect()
-                self.daq_device.release()
 
+    def work(self, input_items, output_items):
+        """example: multiply with constant"""
+        #output_items[0][:] = self.frecuencia
+        """codigo para tarjeta de adquisicion"""
+        self.status, self.transfer_status = self.ai_device.get_scan_status()
+        index = self.transfer_status.current_index
+        #print(index)
+        #print('chan =',self.low_channel, ': ','{:.8f}'.format(self.data[index]))
+        output_items[0][:] = self.data[index]
         return len(output_items[0])
