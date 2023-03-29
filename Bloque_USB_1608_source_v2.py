@@ -94,12 +94,12 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
             # separamos un espacion de memoria para la informacion a recibir.
             self.data = create_float_buffer(self.channel_count, self.samples_per_channel)
 
-            #print('\n', descriptor.dev_string, ' ready', sep='')
-            #print('    Canales: ', self.low_channel, '-', self.high_channel)
-            #print('    Input mode: ', input_mode.name)
-            #print('    Rango: ', ranges[self.rango_index].name)
-            #print('    Muestras por canal: ', self.samples_per_channel)
-            #print('    Frecuencia: ', self.frecuencia, 'Hz')
+            print('\n', descriptor.dev_string, ' ready', sep='')
+            print('    Canales: ', self.low_channel, '-', self.high_channel)
+            print('    Input mode: ', input_mode.name)
+            print('    Rango: ', ranges[self.rango_index].name)
+            print('    Muestras por canal: ', self.samples_per_channel)
+            print('    Frecuencia: ', self.frecuencia, 'Hz')
 
             # Empezamos la adquisicion.
             rate = self.ai_device.a_in_scan(low_channel, high_channel, input_mode,ranges[self.rango_index], samples_per_channel,frecuencia, self.scan_options, self.flags, self.data)
