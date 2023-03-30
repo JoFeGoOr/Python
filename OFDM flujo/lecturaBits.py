@@ -1,4 +1,3 @@
 import numpy
 
-
-file = numpy.fromfile(open('bit-in.txt'), dtype=numpy.uint8)
+f = numpy.fromfile('bit-in.txt')
