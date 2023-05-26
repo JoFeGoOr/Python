@@ -20,7 +20,7 @@ def main():
     low_channel = 0
     high_channel = 0
     samples_per_channel = 1
-    frec = 3
+    frec = 1
     
 
     try:
@@ -127,14 +127,16 @@ def main():
                     print('currentScanCount = ',transfer_status.current_scan_count)
                     print('currentIndex = ', index, '\n')
 
+                    print('chan =',i + low_channel, ': ','{:.8f}'.format(data1[index + i]))
+                    #print('largo de la lectura:', len('{:.9f}'.format(data1[index + i])))
+
                     if data1[index + i] == aux and ver == True:
-                        txt.write(str(data1[index + i])+'\n')
+                        txt.write('{:.9f}'.format(data1[index + i])+'\n')
                         ver = False
                     elif data1[index + i] != aux:
                         aux = data1[index + i]
                         ver = True
 
-                    print('chan =',i + low_channel, ': ','{:.8f}'.format(data1[index + i]))
 
                     #for i in range(channel_count):
                         #clear_eol()

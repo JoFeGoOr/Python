@@ -8,7 +8,7 @@ from time import sleep
 
 def main():
 
-    range_index = 0     #controla que rango de voltajes se usara
+    range_index = 1     #controla que rango de voltajes se usara
     canal = 0           #indica el canal que se ocupara para realizar la lectura.
 
     try:
