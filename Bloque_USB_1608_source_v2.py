@@ -35,6 +35,8 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         self.scan_options = ScanOption.CONTINUOUS
         self.flags = AInScanFlag.DEFAULT
         self.interface_type = InterfaceType.ANY
+
+        # Realizo la conexion con el dispositivo
         try:
 
             # Obtenemos una lista de objetos(dispositivos) que pueden ser usados como DaqDevice
