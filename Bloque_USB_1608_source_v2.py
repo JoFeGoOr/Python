@@ -91,7 +91,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
             # Obtenemos un lista de rango de voltajes validos
             ranges = ai_info.get_ranges(input_mode)
 
-            # separamos un espacion de memoria para la informacion a recibir.
+            # separamos un espacio de memoria para la informacion a recibir.
             self.data = create_float_buffer(self.channel_count, self.samples_per_channel)
 
             print('\n', descriptor.dev_string, ' ready', sep='')
