@@ -112,17 +112,12 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
 
 
     def work(self, input_items, output_items):
-        """example: multiply with constant"""
-        #output_items[0][:] = self.frecuencia
         """codigo para tarjeta de adquisicion"""
-        self.status, self.transfer_status = self.ai_device.get_scan_status()
-        index = self.transfer_status.current_index
-        #print(index)
         #print('chan =',self.low_channel, ': ','{:.8f}'.format(self.data[index]))
 
-        if self.index_output >= len(output_items[0]):
-            self.index_output = 0
-        output_items[0][self.index_output] = self.data[index]
-        self.index_output += 1
+        """
+        for i in range(len(output_items[0])):
+            output_items[0][i] = self.data[0]
+        """
 
         return len(output_items[0])
