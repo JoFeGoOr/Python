@@ -28,6 +28,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         self.low_channel = low_channel
         self.high_channel = high_channel
         self.samples_per_channel = samples_per_channel
+        self.index_output = 0
 
         self.daq_device = None
         self.ai_device = None
@@ -118,6 +119,10 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         index = self.transfer_status.current_index
         #print(index)
         #print('chan =',self.low_channel, ': ','{:.8f}'.format(self.data[index]))
-        for i in range(len(output_items[0])):
-            output_items[0][i] = self.data[index]
+
+        if self.index_output >= len(output_items[0]):
+            self.index_output = 0
+        output_items[0][self.index_output] = self.data[index]
+        self.index_output += 1
+
         return len(output_items[0])

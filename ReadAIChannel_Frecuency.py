@@ -16,11 +16,11 @@ def main():
     flags = AInScanFlag.DEFAULT
     interface_type = InterfaceType.ANY
 
-    range_index = 2
+    range_index = 0
     low_channel = 0
     high_channel = 0
     samples_per_channel = 1
-    frec = 1
+    frec = 10
     
 
     try:
@@ -127,7 +127,7 @@ def main():
                     print('currentScanCount = ',transfer_status.current_scan_count)
                     print('currentIndex = ', index, '\n')
 
-                    print('chan =',i + low_channel, ': ','{:.8f}'.format(data1[index + i]))
+                    print('channel =',i + low_channel, ': ','{:.8f}'.format(data1[index + i]))
                     #print('largo de la lectura:', len('{:.9f}'.format(data1[index + i])))
 
                     if data1[index + i] == aux and ver == True:
