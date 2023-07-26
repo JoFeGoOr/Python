@@ -115,9 +115,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         """codigo para tarjeta de adquisicion"""
         #print('chan =',self.low_channel, ': ','{:.8f}'.format(self.data[index]))
 
-        """
         for i in range(len(output_items[0])):
             output_items[0][i] = self.data[0]
-        """
 
         return len(output_items[0])
