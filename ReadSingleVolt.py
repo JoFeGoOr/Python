@@ -4,7 +4,6 @@
 from uldaq import (get_daq_device_inventory,DaqDevice,InterfaceType,AiInputMode,AInFlag)
 from os import system
 from sys import stdout
-from time import sleep
 
 def main():
 
