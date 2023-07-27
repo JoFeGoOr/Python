@@ -59,9 +59,6 @@ def main():
 
         # Obtenemos un lista de rango de voltajes validos
         ranges = ai_info.get_ranges(input_mode)
-        #for i in range(len(ranges)):
-        #    print(ranges[i])
-        #print(ranges[range_index])
 
         print('\n', descriptor.dev_string, ' listo', sep='')
         print('    Canal: ', canal)
@@ -85,7 +82,6 @@ def main():
                     print('Dispositivo DAQ activo: ', descriptor.dev_string, ' (',descriptor.unique_id, ')\n', sep='')
                     data = ai_device.a_in(canal,input_mode,ranges[range_index],AInFlag.DEFAULT)
                     print('canal ',canal,' data: ','{:.6f}'.format(data), sep='')
-                    sleep(0.1)
                 except (ValueError, NameError, SyntaxError):
                     break
         except KeyboardInterrupt:
