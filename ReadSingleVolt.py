@@ -8,7 +8,7 @@ from time import sleep
 
 def main():
 
-    range_index = 1     #controla que rango de voltajes se usara
+    range_index = 1     #controla que rango de voltajes se usara (0=+-10V; 1=+-5V; 2=+-2V; 3=+-1V)
     canal = 0           #indica el canal que se ocupara para realizar la lectura.
 
     try:
@@ -85,7 +85,7 @@ def main():
                     print('Dispositivo DAQ activo: ', descriptor.dev_string, ' (',descriptor.unique_id, ')\n', sep='')
                     data = ai_device.a_in(canal,input_mode,ranges[range_index],AInFlag.DEFAULT)
                     print('canal ',canal,' data: ','{:.6f}'.format(data), sep='')
-                    #sleep(0.1)
+                    sleep(0.1)
                 except (ValueError, NameError, SyntaxError):
                     break
         except KeyboardInterrupt:
