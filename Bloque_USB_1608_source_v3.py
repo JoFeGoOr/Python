@@ -1,5 +1,5 @@
 from __future__ import print_function
-from uldaq import (get_daq_device_inventory, DaqDevice, AInScanFlag, ScanStatus,ScanOption, create_float_buffer, InterfaceType, AiInputMode)
+from uldaq import (get_daq_device_inventory, DaqDevice, AInScanFlag, ScanStatus,ScanOption, create_float_buffer, InterfaceType, AiInputMode, AInFlag)
 from time import sleep
 from os import system
 from sys import stdout
@@ -12,7 +12,7 @@ from gnuradio import gr
 class blk(gr.sync_block):  # other base classes are basic_block, decim_block, interp_block
     """Embedded Python Block example - a simple multiply const"""
 
-    def __init__(self, frecuencia=25, rango_index=0, low_channel=0, high_channel=0, samples_per_channel=1):  # only default arguments here
+    def __init__(self, canal = 0, range_index = 0):  # only default arguments here
         """arguments to this function show up as parameters in GRC"""
         gr.sync_block.__init__(
             self,
@@ -23,11 +23,8 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
 
         # if an attribute with the same name as a parameter is found,
         # a callback is registered (properties work, too).
-        self.frecuencia = frecuencia
-        self.rango_index = rango_index
-        self.low_channel = low_channel
-        self.high_channel = high_channel
-        self.samples_per_channel = samples_per_channel
+        self.canal = canal
+        self.range_index = range_index
         self.index_output = 0
 
         self.daq_device = None
@@ -51,10 +48,11 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
             # Describimos la cantidad de objetos(dispositivos) encontrados y el detallle correspondiente
             print(number_of_devices, 'Dispositivo(s) DAQ encontrado(s):')
             for i in range(number_of_devices):
-                print('  [', i, '] ', devices[i].product_name, ' (', devices[i].unique_id, ')', sep='')
-
+                print('  [', i, '] ', devices[i].product_name, ' (',
+                    devices[i].unique_id, ')', sep='')
+            
             # Si existe solo 1, su indice es automaticamente 0, si existe mas de 1, se debe verificar con que dispositivo queremos interactuar
-            if number_of_devices > 1:
+            if number_of_devices > 1:  
                 descriptor_index = input('\nSeleccione un dispositivo DAQ, ingrese un numero entre 0 y ' + str(number_of_devices - 1) + ': ')
                 descriptor_index = int(descriptor_index)
                 if descriptor_index not in range(number_of_devices):
@@ -63,49 +61,34 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
                 descriptor_index = 0
 
             # Crea el dispositivo DAQ desde el descriptor con el indice especificado.
-            self.daq_device = DaqDevice(devices[descriptor_index])
+            daq_device = DaqDevice(devices[descriptor_index])
 
             # Obtiene el objeto AIDevice(Subsistema de entradas analogicas) y verifica si es valido.
-            self.ai_device = self.daq_device.get_ai_device()
+            self.ai_device = daq_device.get_ai_device()
             if self.ai_device is None:
                 raise RuntimeError('Error: El dispositivo DAQ no soporta entradas analogicas')
-
-            # Verificamos si dispositivo DAQ especificado es compatible con una entrada analógica controlada por hardware
-            ai_info = self.ai_device.get_info()
-            if not ai_info.has_pacer():
-                raise RuntimeError('\nError: El dispositivo DAQ especificado no es compatible con la entrada analógica controlada por hardware')
             
             # Establecemos la conexion con el dispositivo DAQ, 3 flash de led indica que la conexion fue exitosa
-            descriptor = self.daq_device.get_descriptor()
+            descriptor = daq_device.get_descriptor()
             print('\nConectando con', descriptor.dev_string, '- por favor espere')
-            self.daq_device.connect(connection_code=0)
-            if self.daq_device.is_connected() != True:
+            daq_device.connect(connection_code=0)
+            if daq_device.is_connected() == True:
+                daq_device.flash_led(3)
+            else:
                 raise RuntimeError('Error: No se pudo hacer conexion con el dispositivo')
-            
-            # La entrada por defecto es SINGLE_ENDED.
-            input_mode = AiInputMode.SINGLE_ENDED
 
-            # conseguimos el numero de canales y validamos el numero del canal superior.
-            number_of_channels = ai_info.get_num_chans_by_mode(input_mode)
-            if self.high_channel >= number_of_channels:
-                self.high_channel = number_of_channels - 1
-            self.channel_count = self.high_channel - self.low_channel + 1
+            ai_info = self.ai_device.get_info()
+
+            # La entrada por defecto es SINGLE_ENDED.
+            self.input_mode = AiInputMode.SINGLE_ENDED
 
             # Obtenemos un lista de rango de voltajes validos
-            ranges = ai_info.get_ranges(input_mode)
+            self.ranges = ai_info.get_ranges(self.input_mode)
 
-            # separamos un espacio de memoria para la informacion a recibir.
-            self.data = create_float_buffer(self.channel_count, self.samples_per_channel)
-
-            # Empezamos la adquisicion.
-            rate = self.ai_device.a_in_scan(low_channel, high_channel, input_mode,ranges[self.rango_index], samples_per_channel,frecuencia, self.scan_options, self.flags, self.data)
-
-            print('\n', descriptor.dev_string, ' ready', sep='')
-            print('    Canales: ', self.low_channel, '-', self.high_channel)
-            print('    Input mode: ', input_mode.name)
-            print('    Rango: ', ranges[self.rango_index].name)
-            print('    Muestras por canal: ', self.samples_per_channel)
-            print('    Frecuencia: ', rate, 'Hz')
+            print('\n', descriptor.dev_string, ' listo', sep='')
+            print('    Canal: ', self.canal)
+            print('    Modo Input: ', self.input_mode.name)
+            print('    Rango: ', self.ranges[self.range_index].name)
             
         except RuntimeError as error:
             print('\n', error)
@@ -116,7 +99,8 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         #print('chan =',self.low_channel, ': ','{:.8f}'.format(self.data[index]))
 
         for i in range(len(output_items[0])):
-            output_items[0][i] = self.data[0]
+            data = self.ai_device.a_in(self.canal,self.input_mode,self.ranges[self.range_index],AInFlag.DEFAULT)
+            output_items[0][i] = data
             print(output_items[0][i])
 
         return len(output_items[0])

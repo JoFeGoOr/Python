@@ -26,7 +26,7 @@ def main():
                   devices[i].unique_id, ')', sep='')
         
         # Si existe solo 1, su indice es automaticamente 0, si existe mas de 1, se debe verificar con que dispositivo queremos interactuar
-        if number_of_devices > 1:
+        if number_of_devices > 1:  
             descriptor_index = input('\nSeleccione un dispositivo DAQ, ingrese un numero entre 0 y ' + str(number_of_devices - 1) + ': ')
             descriptor_index = int(descriptor_index)
             if descriptor_index not in range(number_of_devices):
